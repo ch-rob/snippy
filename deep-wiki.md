@@ -118,3 +118,93 @@ sequenceDiagram
 - [Azure OpenAI Documentation](https://docs.microsoft.com/en-us/azure/cognitive-services/openai/overview)
 
 This documentation provides a comprehensive overview of the MCP tools project, detailing its architecture, functionality, and best practices.
+
+# Deep Wiki
+
+## Project Overview
+
+This project involves the usage of code snippets related to coding patterns, specifically revolving around logging mechanisms. The primary aim is to manage and control the logging levels of external SDKs to ensure that application logs remain focused and uncluttered.
+
+## Major Concepts
+
+### Logging Management
+
+Logging is a crucial aspect of monitoring applications, debugging, and performance management. In this project, logging levels are adjusted specifically for the Azure SDK to ensure that logs from the SDK do not overwhelm or obscure the application logs. The logging levels are set to `WARNING`, which means that only warnings or more severe log messages are captured. This can help in reducing noise from the logs and focusing on potentially problematic messages.
+
+#### Code Explanation
+
+The snippet titled **ai-agents-service-usage** demonstrates the following:
+- **SDK Logging Adjustment**: It changes the logging level for Azure SDK components, such as `azure`, `azure.core`, and `azure.ai.projects`, to `WARNING`.
+
+```python
+# Reduce Azure SDK logging to focus on our application logs
+logging.getLogger("azure").setLevel(logging.WARNING)
+logging.getLogger("azure.core").setLevel(logging.WARNING)
+logging.getLogger("azure.ai.projects").setLevel(logging.WARNING)
+```
+
+## Mermaid Diagrams
+
+### System Architecture
+
+```mermaid
+graph TD
+  Sys(Application) -->|Interacts| SDK(Azure SDK)
+  subgraph LoggingControl
+    LogSettings(Logging Settings Adjustment)
+    SDK -->|Apply Settings| LogSettings
+  end
+  Application -->|Generate Logs| Logger((Logger))
+  LogSettings -->|Focus on Application Logs| Logger
+  SDK -->|Generates Logs| Logger
+  title System Architecture for Logging Control
+```
+
+### Data Flow
+
+```mermaid
+graph LR
+  LoggingSource(Azure SDK Log Source) -- Data Stream --> LogSettingsAdjust(Logging Settings Adjustment)
+  LogSettingsAdjust -->|Filtered Logs| ApplicationLogs(Application Logs Focus)
+  ApplicationLogs -->|Generate| LogOutput(Log Output)
+  title Data Flow in Logging Management
+```
+
+## Snippet Catalog
+
+| Snippet ID                | Language | Purpose                                      |
+|---------------------------|----------|----------------------------------------------|
+| ai-agents-service-usage   | Python   | Adjust logging levels for Azure SDK modules  |
+
+## Step-by-Step Walkthroughs
+
+1. **Integrate Snippet in Application**:
+   - Import the `logging` module.
+   - Use `logging.getLogger()` to fetch the logger for each Azure SDK component.
+   - Set the log level to `WARNING` using `setLevel(logging.WARNING)`.
+
+2. **Monitor Logs**:
+   - Run the application.
+   - Observe that only warnings and errors from the Azure SDK are logged.
+   - Check that application logs have increased clarity.
+
+## Best Practices
+
+- It's crucial to adjust logging levels of external libraries to prevent log flooding, thus ensuring readability of critical application logs.
+- Regularly review log settings as libraries and application functionalities evolve.
+
+## Anti-patterns
+
+- Avoid setting the logging level to `ERROR` or `CRITICAL` for SDKs unless necessary, as it might ignore important warnings.
+- Do not globally set log levels without considering specific requirements for different components.
+
+## TODOs
+
+- Implement dynamic logging level changes based on environment variables, allowing more flexible configurations.
+- Extend logging adjustments to other third-party SDKs used in the application.
+
+## Further Reading
+
+- Python's `logging` module documentation: https://docs.python.org/3/library/logging.html
+- Logging best practices: https://logging.apache.org/log4j/2.x/manual/best_practices.html
+- Azure SDK for Python: https://docs.microsoft.com/en-us/python/api/overview/azure/

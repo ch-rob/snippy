@@ -1,0 +1,86 @@
+Build and deploy AI agents with MCP and Azure Functions
+1 Hr 1 Min Remaining
+10 Deploy the Application Code to Azure
+You've implemented the code and verified it works locally against your provisioned cloud resources. Now, deploy the application code to the Azure Function App created by azd provision.
+
+Go back to the Terminal and stop the local Functions host if it's still running (Ctrl+C in the func start terminal - wait a few seconds).
+
+Ensure your terminal is in the root snippy directory (the one containing azure.yaml).
+
+powershell
+cd $HOME\snippy # Or C:\Users\LabUser\snippy
+Run the AZD deploy command:
+
+azd deploy
+
+This may take a couple minutes to deploy.
+
+This command performs the following:
+
+Reads the azure.yaml file to determine which service code to deploy (configured to deploy the src directory to the Function App).
+Packages your application code.
+Deploys the code to the Azure Function App provisioned earlier.
+Configures the application settings in the deployed Function App based on your .azure/snippy-mcp-lab-53226965/.env file, ensuring it can connect to OpenAI, Cosmos DB, etc., in the cloud.
+Wait for the deployment to complete successfully. AZD will output the endpoints for your deployed application, including the Function App's base URL (e.g., https://func-api-…azurewebsites.net). Make a note of this URL.
+
+11 Connect VS Code / Copilot to the Cloud MCP Endpoint
+Finally, configure VS Code and Copilot Chat to use the tools running on your deployed Azure Function App.
+
+Authenticate with Azure using Device Code:
+
+Before you can retrieve the system key, you must authenticate using the Azure CLI (az):
+
+az login --use-device-code
+
+This command will output a URL and a device code. Copy the code, Ctrl+Click the URL to open it, then paste the code when prompted to complete authentication.
+
+Get the MCP System Key:
+
+The cloud MCP SSE endpoint (/runtime/webhooks/mcp/sse) is protected by a system key. You'll need this key to authenticate calls. Once logged in, run the following commands in your VS Code terminal to retrieve the system key:
+
+powershell
+$appName = azd env get-value AZURE_FUNCTION_NAME
+az functionapp keys list -n $appName --query "systemKeys.mcp_extension" -g rg-snippymcplab --output tsv
+The output will be a long string - copy this value. This is your required for calling the MCP SSE endpoint.
+
+Add Cloud Endpoint to .vscode/mcp.json: After retrieving your Function App name and MCP system key, you can now configure the cloud endpoint in .vscode/mcp.json.
+
+Select Start above to remote-snippy in mcp.json - this will prompt you to enter:
+
+The Function App name
+The MCP system key
+You don't need to manually replace any values in the JSON - just copy the following values from your Terminal:
+
+powershell
+  # Print the Function App name
+  $appName
+Use the $appName value for the functionapp-name input, and paste the system key you retrieved earlier using:
+
+powershell
+ az functionapp keys list -n $appName --query "systemKeys.mcp_extension" -g rg-snippymcplab --output tsv
+This setup allows the cloud-hosted MCP to receive and stream events securily.
+
+16-remote-snippy.png
+
+Switch Copilot to Cloud Server:
+
+Open Copilot Chat (Ctrl + Alt + I).
+Ensure Agent mode is selected.
+Verify the tools are loaded correctly.
+Test Cloud hosted Tools: Repeat the tests from step 9.2, but this time with the remote-snippy server:
+
+Select some code.
+
+Ask Copilot: save the selected snippet as my-cloud-mcp-test
+
+If you see errors on local-snippy, open .vscode/mcp.json, delete the block of text for local-snippy, then try again.
+
+74sc3vu8.jpg
+
+Confirm the tool usage.
+
+Ask Copilot: get the snippet named my-cloud-mcp-test
+
+Try other tools like deep_wiki as we did in section 9.2.
+
+Verify that the tools work correctly by interacting with your deployed Azure Function App.
